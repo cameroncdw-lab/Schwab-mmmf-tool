@@ -1,9 +1,25 @@
 <!DOCTYPE html>
+<!-- ============================================================
+  SCHWAB MONEY MARKET ADVISOR REFERENCE TOOL
+  Last yield update: 2026-05-21 (most recent market day)
+
+  TO UPDATE YIELDS (monthly):
+  1. Schwab funds → https://www.schwabassetmanagement.com/products/money-fund-yields
+  2. SGOV (iShares) → https://www.ishares.com/us/products/314116/ishares-0-3-month-treasury-bond-etf
+     Look for "30 Day SEC Yield" on the iShares page
+
+  Update TAXABLE_FUNDS, EXEMPT_FUNDS, and ETF_FUNDS arrays in the script below.
+  Update LAST_UPDATED to the new date.
+
+  TO EDIT THIS TOOL:
+  Paste the full code into a new Claude chat and describe what you want changed.
+============================================================ -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Schwab Money Market — Advisor Reference</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23E8F0EB'/><rect x='7' y='20' width='4' height='6' rx='1' fill='%234A7C5F'/><rect x='13' y='15' width='4' height='11' rx='1' fill='%234A7C5F' opacity='0.7'/><rect x='19' y='10' width='4' height='16' rx='1' fill='%231A3A2A'/><line x1='7' y1='19' x2='21' y2='9' stroke='%234A7C5F' stroke-width='1.5' stroke-linecap='round'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Libre+Baskerville:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
