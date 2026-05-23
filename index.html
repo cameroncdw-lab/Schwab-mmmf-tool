@@ -477,8 +477,13 @@
     return yld * (1 - state);
   }
 
-  function teq(yld, fed) {
-    return yld / (1 - fed);
+  function teq(yld, fed, state) {
+    // Exempt funds dodge federal tax but still pay state
+    // afterTaxExempt = yld * (1 - state)
+    // To find what a fully taxable fund must yield to match:
+    // taxableAfterTax = teq * (1 - fed - state) = yld * (1 - state)
+    // teq = yld * (1 - state) / (1 - fed - state)
+    return (yld * (1 - state)) / (1 - fed - state);
   }
 
   function tagBadge(tag) {
@@ -531,7 +536,7 @@
     // Exempt table
     const exemBody = document.getElementById('exempt-body');
     exemBody.innerHTML = EXEMPT_FUNDS.map(f => {
-      const teqVal = teq(f.yield, fed).toFixed(2);
+      const teqVal = teq(f.yield, fed, state).toFixed(2);
       const at = afterTaxExempt(f.yield, state).toFixed(2);
       const isWinner = f.ticker === bestTicker;
       return `<tr class="${isWinner ? 'winner-row' : ''}">
@@ -549,7 +554,7 @@
     // ETF table
     const etfBody = document.getElementById('etf-body');
     etfBody.innerHTML = ETF_FUNDS.map(f => {
-      const teqVal = f.stateExempt ? teq(f.yield, fed).toFixed(2) : null;
+      const teqVal = f.stateExempt ? teq(f.yield, fed, state).toFixed(2) : null;
       const at = afterTaxTaxable(f.yield, fed, state, f.stateExempt).toFixed(2);
       const isWinner = f.ticker === bestTicker;
       return `<tr class="${isWinner ? 'winner-row' : ''}">
@@ -570,7 +575,7 @@
 
     const txAt = afterTaxTaxable(bestTaxableNoMin.yield,fed,state,bestTaxableNoMin.stateExempt).toFixed(2);
     const exAt = afterTaxExempt(bestExemptNoMin.yield,state).toFixed(2);
-    const exTeq = teq(bestExemptNoMin.yield,fed).toFixed(2);
+    const exTeq = teq(bestExemptNoMin.yield, fed, state).toFixed(2);
     const muniWins = parseFloat(exAt) > parseFloat(txAt);
 
     // Summary cards
