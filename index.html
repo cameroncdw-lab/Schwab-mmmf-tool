@@ -334,18 +334,22 @@
     <div class="control-group">
       <label>Client federal tax bracket</label>
       <div class="control-row">
-        <input type="range" id="bracket" min="0" max="4" step="1" value="2">
+        <input type="range" id="bracket" min="0" max="37" step="0.1" value="24">
         <span class="control-val" id="bracket-out">24%</span>
       </div>
     </div>
     <div class="control-group">
       <label>State + local tax rate</label>
       <div class="control-row">
-        <input type="range" id="state" min="0" max="13" step="0.5" value="3.9">
+        <input type="range" id="state" min="0" max="13.3" step="0.1" value="3.9">
         <span class="control-val" id="state-out">3.9%</span>
       </div>
     </div>
   </div>
+
+  <p style="font-size: 0.78rem; color: var(--c-muted); font-family: var(--font-mono); margin-bottom: 1.5rem; line-height: 1.6;">
+    All yields are already <strong style="color: var(--c-text);">net of expense ratio</strong> — the SEC yield standard subtracts fees before publication, so the exp ratio column is for reference only. &nbsp;·&nbsp; <strong style="color: var(--c-text);">After-tax yield</strong> = gross yield (net of fees) × (1 − tax rate).
+  </p>
 
   <!-- Summary cards -->
   <div class="summary-grid" id="summary-cards"></div>
@@ -364,10 +368,9 @@
       <thead>
         <tr>
           <th>Fund</th>
-          <th>7-day yield</th>
+          <th>7-day yield (net of fees)</th>
           <th>Exp ratio</th>
           <th>After-tax yield</th>
-          <th>Minimum</th>
         </tr>
       </thead>
       <tbody id="taxable-body"></tbody>
@@ -385,20 +388,47 @@
       <thead>
         <tr>
           <th>Fund</th>
-          <th>7-day yield</th>
+          <th>7-day yield (net of fees)</th>
           <th>Exp ratio</th>
           <th>TEQ yield</th>
-          <th>Minimum</th>
+          <th>After-tax yield</th>
         </tr>
       </thead>
       <tbody id="exempt-body"></tbody>
     </table>
   </div>
 
+  <!-- ETF -->
+  <div class="section-head">
+    <h2>Short-term Treasury ETF</h2>
+    <span class="section-pill pill-taxable">ETF · NYSE · ~$100/share · state/local exempt</span>
+    <div class="line"></div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fund</th>
+          <th>30-day SEC yield (net of fees)</th>
+          <th>Exp ratio</th>
+          <th>TEQ yield</th>
+          <th>After-tax yield</th>
+        </tr>
+      </thead>
+      <tbody id="etf-body"></tbody>
+    </table>
+  </div>
+
   <div class="footer">
-    <strong>Updating yields:</strong> Visit <a href="https://www.schwabassetmanagement.com/products/money-fund-yields" target="_blank">schwabassetmanagement.com/products/money-fund-yields</a> and update the <code>TAXABLE_FUNDS</code> and <code>EXEMPT_FUNDS</code> arrays at the top of the &lt;script&gt; tag. Change <code>LAST_UPDATED</code> to the new date.
+    <strong>All yields are already net of expense ratio</strong> — the 7-day SEC yield and 30-day SEC yield standards subtract fees before publication. The exp ratio column is shown for transparency only; you don't need to subtract it yourself.
     <br><br>
-    <strong>TEQ (tax-equivalent yield)</strong> = muni yield ÷ (1 − federal rate). This is what a taxable fund must yield to deliver the same after-tax income. After-tax on taxable funds assumes full federal + state ordinary income rate. SWKXX is only relevant for California clients (fed + CA state exempt). Ultra shares require $1M minimum.
+    <strong>No transaction fees:</strong> All Schwab Money Funds have no transaction fees. SGOV is an iShares (BlackRock) ETF — ETFs generally trade commission-free on Schwab, but verify for your specific account type.
+    <br><br>
+    <strong>SGOV price stability:</strong> Unlike a money market mutual fund's guaranteed $1.00 NAV, SGOV's price fluctuates slightly (~$100/share, 52-week range $100.27–$100.74). In practice this is negligible for a cash reserve position, but it is technically not a stable NAV product.
+    <br><br>
+    <strong>TEQ (tax-equivalent yield)</strong> = yield ÷ (1 − federal rate). This is what a fully taxable fund must yield to match after-tax. Shown for fed-exempt muni funds and SGOV (state exempt). SWKXX is only relevant for California clients. Ultra shares require $1M minimum.
+    <br><br>
+    <strong>Updating yields:</strong> Visit <a href="https://www.schwabassetmanagement.com/products/money-fund-yields" target="_blank">schwabassetmanagement.com/products/money-fund-yields</a> and update the <code>TAXABLE_FUNDS</code>, <code>EXEMPT_FUNDS</code>, and <code>ETF_FUNDS</code> arrays in the script. For SGOV use the 30-day SEC yield from <a href="https://www.ishares.com/us/products/314116/" target="_blank">iShares.com</a>. Change <code>LAST_UPDATED</code> to the new date.
     <br><br>
     For illustration only. Not investment advice. Verify current yields before client recommendations.
   </div>
@@ -413,27 +443,31 @@
   const LAST_UPDATED = '2026-05-20';
 
   const TAXABLE_FUNDS = [
-    { name: 'Schwab Prime Advantage',          ticker: 'SWVXX', yield: 3.43, exp: 0.34, min: 'None',  tag: 'prime', stateExempt: false },
-    { name: 'Schwab Prime Advantage Ultra',    ticker: 'SNAXX', yield: 3.58, exp: 0.19, min: '$1M',   tag: 'prime', stateExempt: false },
-    { name: 'Schwab Government',               ticker: 'SNVXX', yield: 3.32, exp: 0.34, min: 'None',  tag: 'govt',  stateExempt: false },
-    { name: 'Schwab Government Ultra',         ticker: 'SGUXX', yield: 3.47, exp: 0.19, min: '$1M',   tag: 'govt',  stateExempt: false },
-    { name: 'Schwab Treasury Obligations',     ticker: 'SNOXX', yield: 3.33, exp: 0.34, min: 'None',  tag: 'treas', stateExempt: true  },
-    { name: 'Schwab Treasury Obligations Ultra', ticker: 'SCOXX', yield: 3.48, exp: 0.19, min: '$1M', tag: 'treas', stateExempt: true  },
-    { name: 'Schwab U.S. Treasury',            ticker: 'SNSXX', yield: 3.36, exp: 0.34, min: 'None',  tag: 'treas', stateExempt: true  },
-    { name: 'Schwab U.S. Treasury Ultra',      ticker: 'SUTXX', yield: 3.51, exp: 0.19, min: '$1M',   tag: 'treas', stateExempt: true  },
+    { name: 'Schwab Prime Advantage',          ticker: 'SWVXX', yield: 3.43, exp: 0.34, tag: 'prime', stateExempt: false },
+    { name: 'Schwab Government',               ticker: 'SNVXX', yield: 3.32, exp: 0.34, tag: 'govt',  stateExempt: false },
+    { name: 'Schwab Treasury Obligations',     ticker: 'SNOXX', yield: 3.33, exp: 0.34, tag: 'treas', stateExempt: true  },
+    { name: 'Schwab U.S. Treasury',            ticker: 'SNSXX', yield: 3.36, exp: 0.34, tag: 'treas', stateExempt: true  },
   ];
 
   const EXEMPT_FUNDS = [
-    { name: 'Schwab Municipal Money Fund',       ticker: 'SWTXX', yield: 1.98, exp: 0.34, min: 'None', note: 'Fed exempt · state taxable · national munis' },
-    { name: 'Schwab AMT Tax-Free Money Fund',    ticker: 'SWWXX', yield: 2.10, exp: 0.20, min: 'None', note: 'Fed exempt · no AMT exposure · state taxable' },
-    { name: 'Schwab CA Municipal Money Fund',    ticker: 'SWKXX', yield: 1.80, exp: 0.34, min: 'None', note: 'Fed + CA state exempt · CA residents only' },
+    { name: 'Schwab Municipal Money Fund',       ticker: 'SWTXX', yield: 1.98, exp: 0.34, note: 'Fed exempt · state taxable · national munis' },
+    { name: 'Schwab AMT Tax-Free Money Fund',    ticker: 'SWWXX', yield: 2.10, exp: 0.20, note: 'Fed exempt · no AMT exposure · state taxable' },
+    { name: 'Schwab CA Municipal Money Fund',    ticker: 'SWKXX', yield: 1.80, exp: 0.34, note: 'Fed + CA state exempt · CA residents only' },
+  ];
+
+  // ETFs — trade on NYSE, price stays very close to $100/share (not a guaranteed $1.00 NAV)
+  // SGOV 52-week range: $100.27–$100.74 — essentially flat in practice
+  // Income is state/local exempt (U.S. Treasuries), federally taxable ordinary income
+  // SGOV yield source: iShares 30-day SEC yield (already net of 0.09% expense ratio)
+  const ETF_FUNDS = [
+    { name: 'iShares 0-3 Month Treasury Bond ETF', ticker: 'SGOV', yield: 3.54, exp: 0.09, min: '1 share (~$100)', note: 'iShares ETF · NYSE · ~$100/share · 52wk range $100.27–$100.74 · U.S. Treasuries · state/local exempt', stateExempt: true },
   ];
 
   /* ============================================================
      NO NEED TO EDIT BELOW THIS LINE
   ============================================================ */
 
-  const BRACKETS = [12, 22, 24, 32, 37];
+  const BRACKETS = null; // replaced by continuous slider
 
   function afterTaxTaxable(yld, fed, state, stateExempt) {
     return yld * (1 - fed - (stateExempt ? 0 : state));
@@ -454,12 +488,12 @@
   }
 
   function render() {
-    const bi = parseInt(document.getElementById('bracket').value);
-    const fed = BRACKETS[bi] / 100;
+    const fedVal = parseFloat(document.getElementById('bracket').value);
+    const fed = fedVal / 100;
     const stateVal = parseFloat(document.getElementById('state').value);
     const state = stateVal / 100;
 
-    document.getElementById('bracket-out').textContent = BRACKETS[bi] + '%';
+    document.getElementById('bracket-out').textContent = fedVal.toFixed(1) + '%';
     document.getElementById('state-out').textContent = stateVal.toFixed(1) + '%';
 
     // Find overall best after-tax option across all funds
@@ -470,6 +504,10 @@
     });
     EXEMPT_FUNDS.forEach(f => {
       const at = afterTaxExempt(f.yield, state);
+      if (at > bestAfterTax) { bestAfterTax = at; bestTicker = f.ticker; }
+    });
+    ETF_FUNDS.forEach(f => {
+      const at = afterTaxTaxable(f.yield, fed, state, f.stateExempt);
       if (at > bestAfterTax) { bestAfterTax = at; bestTicker = f.ticker; }
     });
 
@@ -487,7 +525,6 @@
         <td><span class="yield-val">${f.yield.toFixed(2)}%</span></td>
         <td><span class="yield-val">${f.exp.toFixed(2)}%</span></td>
         <td><span class="after-tax">${at}%</span></td>
-        <td><span class="min-val">${f.min}</span></td>
       </tr>`;
     }).join('');
 
@@ -501,17 +538,32 @@
         <td>
           <div class="fund-name">${f.name}<span class="badge badge-exempt">fed exempt</span>${isWinner ? ' <span class="badge badge-exempt">best after-tax</span>' : ''}</div>
           <div class="fund-ticker">${f.ticker}</div>
-          <div class="fund-note">${f.note}</div>
         </td>
         <td><span class="yield-val">${f.yield.toFixed(2)}%</span></td>
         <td><span class="yield-val">${f.exp.toFixed(2)}%</span></td>
         <td><span class="teq-val">${teqVal}%</span></td>
-        <td><span class="min-val">${f.min}</span></td>
+        <td><span class="after-tax">${at}%</span></td>
       </tr>`;
     }).join('');
 
-    // Best taxable (no min) and best exempt
-    const bestTaxableNoMin = TAXABLE_FUNDS.filter(f => f.min === 'None').reduce((a,b) =>
+    // ETF table
+    const etfBody = document.getElementById('etf-body');
+    etfBody.innerHTML = ETF_FUNDS.map(f => {
+      const teqVal = f.stateExempt ? teq(f.yield, fed).toFixed(2) : null;
+      const at = afterTaxTaxable(f.yield, fed, state, f.stateExempt).toFixed(2);
+      const isWinner = f.ticker === bestTicker;
+      return `<tr class="${isWinner ? 'winner-row' : ''}">
+        <td>
+          <div class="fund-name">${f.name}<span class="badge badge-govt">ETF</span>${f.stateExempt ? ' <span class="badge badge-treas">state exempt</span>' : ''}${isWinner ? ' <span class="badge badge-exempt">best after-tax</span>' : ''}</div>
+          <div class="fund-ticker">${f.ticker}</div>
+        </td>
+        <td><span class="yield-val">${f.yield.toFixed(2)}%</span></td>
+        <td><span class="yield-val">${f.exp.toFixed(2)}%</span></td>
+        <td><span class="teq-val">${teqVal ? teqVal + '%' : '—'}</span></td>
+        <td><span class="after-tax">${at}%</span></td>
+      </tr>`;
+    }).join('');
+    const bestTaxableNoMin = TAXABLE_FUNDS.reduce((a,b) =>
       afterTaxTaxable(b.yield,fed,state,b.stateExempt) > afterTaxTaxable(a.yield,fed,state,a.stateExempt) ? b : a);
     const bestExemptNoMin = EXEMPT_FUNDS.filter(f => f.ticker !== 'SWKXX').reduce((a,b) =>
       afterTaxExempt(b.yield,state) > afterTaxExempt(a.yield,state) ? b : a);
@@ -549,10 +601,10 @@
     const vEl = document.getElementById('verdict');
     if (muniWins) {
       vEl.className = 'verdict exempt';
-      vEl.innerHTML = `<strong>At ${BRACKETS[bi]}% federal + ${stateVal.toFixed(1)}% state/local:</strong> Muni funds make sense. ${bestExemptNoMin.ticker}'s after-tax yield (${exAt}%) edges ahead of the best no-minimum taxable option (${txAt}% from ${bestTaxableNoMin.ticker}). Higher-bracket clients with taxable accounts belong in <strong>SWTXX or SWWXX</strong>. SWWXX's lower expense ratio (0.20%) gives it a slight edge and it avoids AMT exposure — worth the default for HNW clients.`;
+      vEl.innerHTML = `<strong>At ${fedVal.toFixed(1)}% federal + ${stateVal.toFixed(1)}% state/local:</strong> Muni funds make sense. ${bestExemptNoMin.ticker}'s after-tax yield (${exAt}%) edges ahead of the best taxable option (${txAt}% from ${bestTaxableNoMin.ticker}). Higher-bracket clients with taxable accounts belong in <strong>SWTXX or SWWXX</strong>. SWWXX's lower expense ratio (0.20%) gives it a slight edge and it avoids AMT exposure — worth the default for HNW clients.`;
     } else {
       vEl.className = 'verdict taxable';
-      vEl.innerHTML = `<strong>At ${BRACKETS[bi]}% federal + ${stateVal.toFixed(1)}% state/local:</strong> Taxable funds win after-tax. <strong>${bestTaxableNoMin.ticker}</strong> delivers ${txAt}% after-tax vs ${bestExemptNoMin.ticker}'s ${exAt}%. The federal tax exemption on muni funds doesn't overcome their lower gross yield at this bracket. The crossover typically happens around the 32–37% bracket depending on state rate.${bestTaxableNoMin.stateExempt ? ' Note: ' + bestTaxableNoMin.ticker + ' is also state/local tax exempt — that benefit is already reflected in the after-tax figure.' : ''}`;
+      vEl.innerHTML = `<strong>At ${fedVal.toFixed(1)}% federal + ${stateVal.toFixed(1)}% state/local:</strong> Taxable funds win after-tax. <strong>${bestTaxableNoMin.ticker}</strong> delivers ${txAt}% after-tax vs ${bestExemptNoMin.ticker}'s ${exAt}%. The federal tax exemption on muni funds doesn't overcome their lower gross yield at this bracket. The crossover typically happens around the 32–37% bracket depending on state rate.${bestTaxableNoMin.stateExempt ? ' Note: ' + bestTaxableNoMin.ticker + ' is also state/local tax exempt — that benefit is already reflected in the after-tax figure.' : ''}`;
     }
   }
 
