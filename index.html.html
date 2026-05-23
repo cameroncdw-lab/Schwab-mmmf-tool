@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schwab Money Market — Advisor Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Libre+Baskerville:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     YIELD DATA — UPDATE THIS SECTION MONTHLY
+     Source: https://www.schwabassetmanagement.com/products/money-fund-yields
+     Last updated: 2026-05-20
+  ============================================================ */
+
+  :root {
+    --c-bg: #F7F5F0;
+    --c-surface: #FFFFFF;
+    --c-border: #E2DDD5;
+    --c-border-strong: #C8C2B8;
+    --c-text: #1A1714;
+    --c-muted: #7A7368;
+    --c-accent: #1A3A2A;
+    --c-accent-light: #E8F0EB;
+    --c-accent-mid: #4A7C5F;
+    --c-blue: #1A2E4A;
+    --c-blue-light: #E6EDF5;
+    --c-blue-mid: #4A6E9C;
+    --c-amber: #7A4E1A;
+    --c-amber-light: #F5EDD8;
+    --c-win: #2D6A4F;
+    --c-win-bg: #D8EFDF;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-serif: 'Libre Baskerville', serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--c-bg);
+    color: var(--c-text);
+    min-height: 100vh;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .page-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1.5px solid var(--c-border-strong);
+    padding-bottom: 1.25rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .header-left h1 {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .header-left p {
+    font-size: 0.8rem;
+    color: var(--c-muted);
+    margin-top: 0.25rem;
+    font-family: var(--font-mono);
+  }
+  .header-right {
+    font-size: 0.75rem;
+    color: var(--c-muted);
+    font-family: var(--font-mono);
+    text-align: right;
+  }
+  .header-right a {
+    color: var(--c-blue-mid);
+    text-decoration: none;
+  }
+  .header-right a:hover { text-decoration: underline; }
+
+  /* Controls */
+  .controls {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.75rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 2rem;
+  }
+  .control-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: var(--c-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+  }
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .control-row input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 3px;
+    background: var(--c-border-strong);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .control-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--c-accent);
+    cursor: pointer;
+    border: 2px solid var(--c-surface);
+    box-shadow: 0 0 0 1px var(--c-accent);
+  }
+  .control-row input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--c-accent);
+    cursor: pointer;
+    border: 2px solid var(--c-surface);
+  }
+  .control-val {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 500;
+    min-width: 48px;
+    text-align: right;
+    color: var(--c-text);
+  }
+
+  /* Verdict banner */
+  .verdict {
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin-bottom: 1.75rem;
+    border-left: 3px solid;
+  }
+  .verdict.taxable { background: var(--c-blue-light); border-color: var(--c-blue-mid); color: var(--c-blue); }
+  .verdict.exempt { background: var(--c-accent-light); border-color: var(--c-accent-mid); color: var(--c-accent); }
+
+  /* Section headers */
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .section-head h2 {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+    font-weight: 500;
+  }
+  .section-head .line {
+    flex: 1;
+    height: 1px;
+    background: var(--c-border);
+  }
+  .section-pill {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .pill-taxable { background: var(--c-blue-light); color: var(--c-blue-mid); }
+  .pill-exempt { background: var(--c-accent-light); color: var(--c-accent-mid); }
+
+  /* Tables */
+  .table-wrap {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.75rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+  }
+  thead th {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--c-muted);
+    font-weight: 500;
+    padding: 0.65rem 1rem;
+    text-align: right;
+    border-bottom: 1px solid var(--c-border);
+    background: var(--c-bg);
+  }
+  thead th:first-child { text-align: left; }
+  tbody td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--c-border);
+    text-align: right;
+    vertical-align: middle;
+  }
+  tbody td:first-child { text-align: left; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--c-bg); }
+
+  .fund-name { font-weight: 500; font-size: 0.85rem; }
+  .fund-ticker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--c-muted);
+    margin-top: 2px;
+  }
+  .fund-note {
+    font-size: 0.72rem;
+    color: var(--c-muted);
+    margin-top: 2px;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 500;
+  }
+  .badge-prime { background: #F0EDE8; color: #5A4E3A; }
+  .badge-govt { background: var(--c-blue-light); color: var(--c-blue-mid); }
+  .badge-treas { background: #EAE8F0; color: #4A4A7C; }
+  .badge-exempt { background: var(--c-accent-light); color: var(--c-accent-mid); }
+
+  .yield-val { font-family: var(--font-mono); font-weight: 500; }
+  .after-tax { font-family: var(--font-mono); font-weight: 500; color: var(--c-muted); }
+  .teq-val { font-family: var(--font-mono); font-weight: 500; color: var(--c-win); }
+  .winner-row td { background: var(--c-win-bg) !important; }
+  .winner-row td .after-tax,
+  .winner-row td .teq-val { color: var(--c-win); }
+  .min-val { font-family: var(--font-mono); font-size: 0.78rem; color: var(--c-muted); }
+
+  /* Summary cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  .summary-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+  }
+  .summary-card .sc-label {
+    font-family: var(--font-mono);
+    font-size: 0.67rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--c-muted);
+    margin-bottom: 0.35rem;
+  }
+  .summary-card .sc-val {
+    font-family: var(--font-mono);
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--c-text);
+    line-height: 1;
+  }
+  .summary-card .sc-sub {
+    font-size: 0.72rem;
+    color: var(--c-muted);
+    margin-top: 0.25rem;
+  }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid var(--c-border);
+    padding-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--c-muted);
+    line-height: 1.6;
+  }
+  .footer a { color: var(--c-blue-mid); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .controls { grid-template-columns: 1fr; }
+    .header { flex-direction: column; }
+    table { font-size: 0.78rem; }
+    thead th, tbody td { padding: 0.6rem 0.6rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div class="header">
+    <div class="header-left">
+      <h1>Schwab Money Market — Advisor Reference</h1>
+      <p>7-day yields as of 05/20/26 &nbsp;·&nbsp; tax-equivalent calculator</p>
+    </div>
+    <div class="header-right">
+      Yield source:<br>
+      <a href="https://www.schwabassetmanagement.com/products/money-fund-yields" target="_blank">schwabassetmanagement.com ↗</a>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="control-group">
+      <label>Client federal tax bracket</label>
+      <div class="control-row">
+        <input type="range" id="bracket" min="0" max="4" step="1" value="2">
+        <span class="control-val" id="bracket-out">24%</span>
+      </div>
+    </div>
+    <div class="control-group">
+      <label>State + local tax rate</label>
+      <div class="control-row">
+        <input type="range" id="state" min="0" max="13" step="0.5" value="3.9">
+        <span class="control-val" id="state-out">3.9%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="summary-grid" id="summary-cards"></div>
+
+  <!-- Verdict -->
+  <div class="verdict" id="verdict"></div>
+
+  <!-- Taxable funds -->
+  <div class="section-head">
+    <h2>Taxable funds</h2>
+    <span class="section-pill pill-taxable">ordinary income — fed + state</span>
+    <div class="line"></div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fund</th>
+          <th>7-day yield</th>
+          <th>Exp ratio</th>
+          <th>After-tax yield</th>
+          <th>Minimum</th>
+        </tr>
+      </thead>
+      <tbody id="taxable-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Tax-exempt funds -->
+  <div class="section-head">
+    <h2>Tax-exempt funds</h2>
+    <span class="section-pill pill-exempt">fed exempt — state still applies</span>
+    <div class="line"></div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fund</th>
+          <th>7-day yield</th>
+          <th>Exp ratio</th>
+          <th>TEQ yield</th>
+          <th>Minimum</th>
+        </tr>
+      </thead>
+      <tbody id="exempt-body"></tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <strong>Updating yields:</strong> Visit <a href="https://www.schwabassetmanagement.com/products/money-fund-yields" target="_blank">schwabassetmanagement.com/products/money-fund-yields</a> and update the <code>TAXABLE_FUNDS</code> and <code>EXEMPT_FUNDS</code> arrays at the top of the &lt;script&gt; tag. Change <code>LAST_UPDATED</code> to the new date.
+    <br><br>
+    <strong>TEQ (tax-equivalent yield)</strong> = muni yield ÷ (1 − federal rate). This is what a taxable fund must yield to deliver the same after-tax income. After-tax on taxable funds assumes full federal + state ordinary income rate. SWKXX is only relevant for California clients (fed + CA state exempt). Ultra shares require $1M minimum.
+    <br><br>
+    For illustration only. Not investment advice. Verify current yields before client recommendations.
+  </div>
+
+</div>
+
+<script>
+  /* ============================================================
+     UPDATE THIS SECTION MONTHLY
+     Source: https://www.schwabassetmanagement.com/products/money-fund-yields
+  ============================================================ */
+  const LAST_UPDATED = '2026-05-20';
+
+  const TAXABLE_FUNDS = [
+    { name: 'Schwab Prime Advantage',          ticker: 'SWVXX', yield: 3.43, exp: 0.34, min: 'None',  tag: 'prime', stateExempt: false },
+    { name: 'Schwab Prime Advantage Ultra',    ticker: 'SNAXX', yield: 3.58, exp: 0.19, min: '$1M',   tag: 'prime', stateExempt: false },
+    { name: 'Schwab Government',               ticker: 'SNVXX', yield: 3.32, exp: 0.34, min: 'None',  tag: 'govt',  stateExempt: false },
+    { name: 'Schwab Government Ultra',         ticker: 'SGUXX', yield: 3.47, exp: 0.19, min: '$1M',   tag: 'govt',  stateExempt: false },
+    { name: 'Schwab Treasury Obligations',     ticker: 'SNOXX', yield: 3.33, exp: 0.34, min: 'None',  tag: 'treas', stateExempt: true  },
+    { name: 'Schwab Treasury Obligations Ultra', ticker: 'SCOXX', yield: 3.48, exp: 0.19, min: '$1M', tag: 'treas', stateExempt: true  },
+    { name: 'Schwab U.S. Treasury',            ticker: 'SNSXX', yield: 3.36, exp: 0.34, min: 'None',  tag: 'treas', stateExempt: true  },
+    { name: 'Schwab U.S. Treasury Ultra',      ticker: 'SUTXX', yield: 3.51, exp: 0.19, min: '$1M',   tag: 'treas', stateExempt: true  },
+  ];
+
+  const EXEMPT_FUNDS = [
+    { name: 'Schwab Municipal Money Fund',       ticker: 'SWTXX', yield: 1.98, exp: 0.34, min: 'None', note: 'Fed exempt · state taxable · national munis' },
+    { name: 'Schwab AMT Tax-Free Money Fund',    ticker: 'SWWXX', yield: 2.10, exp: 0.20, min: 'None', note: 'Fed exempt · no AMT exposure · state taxable' },
+    { name: 'Schwab CA Municipal Money Fund',    ticker: 'SWKXX', yield: 1.80, exp: 0.34, min: 'None', note: 'Fed + CA state exempt · CA residents only' },
+  ];
+
+  /* ============================================================
+     NO NEED TO EDIT BELOW THIS LINE
+  ============================================================ */
+
+  const BRACKETS = [12, 22, 24, 32, 37];
+
+  function afterTaxTaxable(yld, fed, state, stateExempt) {
+    return yld * (1 - fed - (stateExempt ? 0 : state));
+  }
+
+  function afterTaxExempt(yld, state) {
+    return yld * (1 - state);
+  }
+
+  function teq(yld, fed) {
+    return yld / (1 - fed);
+  }
+
+  function tagBadge(tag) {
+    const map = { prime: ['badge-prime', 'prime'], govt: ['badge-govt', 'govt'], treas: ['badge-treas', 'treas'] };
+    const [cls, label] = map[tag] || ['badge-prime', tag];
+    return `<span class="badge ${cls}">${label}</span>`;
+  }
+
+  function render() {
+    const bi = parseInt(document.getElementById('bracket').value);
+    const fed = BRACKETS[bi] / 100;
+    const stateVal = parseFloat(document.getElementById('state').value);
+    const state = stateVal / 100;
+
+    document.getElementById('bracket-out').textContent = BRACKETS[bi] + '%';
+    document.getElementById('state-out').textContent = stateVal.toFixed(1) + '%';
+
+    // Find overall best after-tax option across all funds
+    let bestAfterTax = -Infinity, bestTicker = '';
+    TAXABLE_FUNDS.forEach(f => {
+      const at = afterTaxTaxable(f.yield, fed, state, f.stateExempt);
+      if (at > bestAfterTax) { bestAfterTax = at; bestTicker = f.ticker; }
+    });
+    EXEMPT_FUNDS.forEach(f => {
+      const at = afterTaxExempt(f.yield, state);
+      if (at > bestAfterTax) { bestAfterTax = at; bestTicker = f.ticker; }
+    });
+
+    // Taxable table
+    const taxBody = document.getElementById('taxable-body');
+    taxBody.innerHTML = TAXABLE_FUNDS.map(f => {
+      const at = afterTaxTaxable(f.yield, fed, state, f.stateExempt).toFixed(2);
+      const isWinner = f.ticker === bestTicker;
+      const stateNote = f.stateExempt ? ' <span class="badge badge-treas">state exempt</span>' : '';
+      return `<tr class="${isWinner ? 'winner-row' : ''}">
+        <td>
+          <div class="fund-name">${f.name}${tagBadge(f.tag)}${stateNote}${isWinner ? ' <span class="badge badge-exempt">best after-tax</span>' : ''}</div>
+          <div class="fund-ticker">${f.ticker}</div>
+        </td>
+        <td><span class="yield-val">${f.yield.toFixed(2)}%</span></td>
+        <td><span class="yield-val">${f.exp.toFixed(2)}%</span></td>
+        <td><span class="after-tax">${at}%</span></td>
+        <td><span class="min-val">${f.min}</span></td>
+      </tr>`;
+    }).join('');
+
+    // Exempt table
+    const exemBody = document.getElementById('exempt-body');
+    exemBody.innerHTML = EXEMPT_FUNDS.map(f => {
+      const teqVal = teq(f.yield, fed).toFixed(2);
+      const at = afterTaxExempt(f.yield, state).toFixed(2);
+      const isWinner = f.ticker === bestTicker;
+      return `<tr class="${isWinner ? 'winner-row' : ''}">
+        <td>
+          <div class="fund-name">${f.name}<span class="badge badge-exempt">fed exempt</span>${isWinner ? ' <span class="badge badge-exempt">best after-tax</span>' : ''}</div>
+          <div class="fund-ticker">${f.ticker}</div>
+          <div class="fund-note">${f.note}</div>
+        </td>
+        <td><span class="yield-val">${f.yield.toFixed(2)}%</span></td>
+        <td><span class="yield-val">${f.exp.toFixed(2)}%</span></td>
+        <td><span class="teq-val">${teqVal}%</span></td>
+        <td><span class="min-val">${f.min}</span></td>
+      </tr>`;
+    }).join('');
+
+    // Best taxable (no min) and best exempt
+    const bestTaxableNoMin = TAXABLE_FUNDS.filter(f => f.min === 'None').reduce((a,b) =>
+      afterTaxTaxable(b.yield,fed,state,b.stateExempt) > afterTaxTaxable(a.yield,fed,state,a.stateExempt) ? b : a);
+    const bestExemptNoMin = EXEMPT_FUNDS.filter(f => f.ticker !== 'SWKXX').reduce((a,b) =>
+      afterTaxExempt(b.yield,state) > afterTaxExempt(a.yield,state) ? b : a);
+
+    const txAt = afterTaxTaxable(bestTaxableNoMin.yield,fed,state,bestTaxableNoMin.stateExempt).toFixed(2);
+    const exAt = afterTaxExempt(bestExemptNoMin.yield,state).toFixed(2);
+    const exTeq = teq(bestExemptNoMin.yield,fed).toFixed(2);
+    const muniWins = parseFloat(exAt) > parseFloat(txAt);
+
+    // Summary cards
+    document.getElementById('summary-cards').innerHTML = `
+      <div class="summary-card">
+        <div class="sc-label">Best taxable (no min)</div>
+        <div class="sc-val">${txAt}%</div>
+        <div class="sc-sub">${bestTaxableNoMin.ticker} · after-tax</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-label">Best muni TEQ (no min)</div>
+        <div class="sc-val">${exTeq}%</div>
+        <div class="sc-sub">${bestExemptNoMin.ticker} · taxable equivalent</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-label">Muni after-tax</div>
+        <div class="sc-val">${exAt}%</div>
+        <div class="sc-sub">${bestExemptNoMin.ticker} · net of state tax</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-label">Spread</div>
+        <div class="sc-val">${Math.abs(parseFloat(txAt) - parseFloat(exAt)).toFixed(2)}%</div>
+        <div class="sc-sub">${muniWins ? 'muni leads' : 'taxable leads'} after-tax</div>
+      </div>
+    `;
+
+    // Verdict
+    const vEl = document.getElementById('verdict');
+    if (muniWins) {
+      vEl.className = 'verdict exempt';
+      vEl.innerHTML = `<strong>At ${BRACKETS[bi]}% federal + ${stateVal.toFixed(1)}% state/local:</strong> Muni funds make sense. ${bestExemptNoMin.ticker}'s after-tax yield (${exAt}%) edges ahead of the best no-minimum taxable option (${txAt}% from ${bestTaxableNoMin.ticker}). Higher-bracket clients with taxable accounts belong in <strong>SWTXX or SWWXX</strong>. SWWXX's lower expense ratio (0.20%) gives it a slight edge and it avoids AMT exposure — worth the default for HNW clients.`;
+    } else {
+      vEl.className = 'verdict taxable';
+      vEl.innerHTML = `<strong>At ${BRACKETS[bi]}% federal + ${stateVal.toFixed(1)}% state/local:</strong> Taxable funds win after-tax. <strong>${bestTaxableNoMin.ticker}</strong> delivers ${txAt}% after-tax vs ${bestExemptNoMin.ticker}'s ${exAt}%. The federal tax exemption on muni funds doesn't overcome their lower gross yield at this bracket. The crossover typically happens around the 32–37% bracket depending on state rate.${bestTaxableNoMin.stateExempt ? ' Note: ' + bestTaxableNoMin.ticker + ' is also state/local tax exempt — that benefit is already reflected in the after-tax figure.' : ''}`;
+    }
+  }
+
+  document.getElementById('bracket').addEventListener('input', render);
+  document.getElementById('state').addEventListener('input', render);
+  render();
+</script>
+</body>
+</html>
